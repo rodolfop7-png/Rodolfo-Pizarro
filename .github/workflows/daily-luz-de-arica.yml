@@ -1,0 +1,18 @@
+name: Luz de Arica - contenido diario
+
+on:
+  schedule:
+    - cron: '0 9 * * *'
+  workflow_dispatch:
+
+jobs:
+  generate-daily-content:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Preparar contenido diario
+        run: |
+          echo "Contenido diario programado para $(date -u +%Y-%m-%d)"
+          echo "La generación/publicación debe usar GEMINI_API_KEY y credenciales de Supabase configuradas como GitHub Secrets."
+      - name: Recordatorio de automatización
+        run: echo "Devocional + versículo + imagen: flujo diario listo para conectar al endpoint seguro."
