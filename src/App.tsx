@@ -1,91 +1,60 @@
-import { useState, useEffect } from 'react';
-import { Wallet } from 'lucide-react';
-import { Expense } from './types';
-import { ExpenseForm } from './components/ExpenseForm';
-import { ExpenseList } from './components/ExpenseList';
-import { Stats } from './components/Stats';
-import { AIInsights } from './components/AIInsights';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { BookOpen, CalendarDays, ChevronRight, Church, Clock3, Cross, ExternalLink, Heart, MapPin, Menu, MessageCircle, Newspaper, Plus, Send, ShieldCheck, Sparkles, Store, Trash2, X } from 'lucide-react';
 
-export default function App() {
-  const [expenses, setExpenses] = useState<Expense[]>(() => {
-    const saved = localStorage.getItem('hogar_ahorro_expenses');
-    return saved ? JSON.parse(saved) : [];
-  });
+type ChurchItem={id:string;name:string;address:string;denomination:string};
+type Business={id:string;name:string;category:string;address:string;url?:string};
+type News={id:string;title:string;summary:string;date:string;source?:string};
+const seedChurches:ChurchItem[]=[
+{id:'1',name:'Iglesia Evangélica Pentecostal',address:'Arica, Región de Arica y Parinacota',denomination:'Pentecostal'},
+{id:'2',name:'Iglesia Metodista Pentecostal de Chile',address:'Arica, Región de Arica y Parinacota',denomination:'Pentecostal'},
+{id:'3',name:'Iglesia Bautista de Arica',address:'Arica, Región de Arica y Parinacota',denomination:'Bautista'}];
+const seedBusinesses:Business[]=[
+{id:'1',name:'Librerías y recursos cristianos',category:'Librería cristiana',address:'Arica',url:'https://www.google.com/maps/search/libreria+cristiana+Arica'},
+{id:'2',name:'Música y producción cristiana',category:'Servicios cristianos',address:'Arica',url:'https://www.google.com/maps/search/servicios+cristianos+Arica'},
+{id:'3',name:'Emprendimientos cristianos de Arica',category:'Emprendimiento',address:'Arica',url:'https://www.google.com/maps/search/negocios+cristianos+Arica'}];
+const seedNews:News[]=[{id:'1',title:'Noticias de Arica',summary:'Este espacio está preparado para publicar diariamente las noticias relevantes de la ciudad.',date:new Date().toLocaleDateString('es-CL')}];
+const devotionalThemes=[
+['Confiar en Dios','Proverbios 3:5-6','Confía en el Señor con todo tu corazón. No necesitas tener todas las respuestas para dar el siguiente paso: entrégale tus caminos y permite que Él dirija tus decisiones.','Hoy entrega a Dios aquello que más te preocupa y da un paso concreto de fe.'],
+['Una paz que permanece','Filipenses 4:6-7','La oración cambia nuestra mirada. Cuando presentamos nuestras cargas delante de Dios con gratitud, podemos experimentar una paz que supera nuestras circunstancias.','Haz una pausa, ora por tres preocupaciones y agradece por tres cosas antes de continuar tu día.'],
+['Fuerza para continuar','Isaías 40:31','Esperar en Dios no significa quedarse quieto. Significa renovar nuestras fuerzas mientras seguimos caminando con esperanza, incluso cuando el proceso parece lento.','No abandones aquello que Dios puso en tu corazón. Avanza hoy con un pequeño acto de obediencia.'],
+['Gracia para comenzar de nuevo','Lamentaciones 3:22-23','Cada mañana trae una nueva oportunidad para recordar que la misericordia de Dios no se agotó ayer. Su fidelidad no depende de que nuestro día anterior haya sido perfecto.','Deja atrás la culpa que no puedes cambiar y comienza este día buscando a Dios con un corazón dispuesto.']];
+function dailyDevotional(){const day=Math.floor(Date.now()/86400000);const [title,verse,text,action]=devotionalThemes[day%devotionalThemes.length];return{title,verse,text,action};}
+function dailyVerse(){const v=[['Todo lo puedo en Cristo que me fortalece.','Filipenses 4:13'],['El Señor es mi pastor; nada me faltará.','Salmos 23:1'],['No temas, porque yo estoy contigo.','Isaías 41:10'],['Este es el día que hizo el Señor; nos gozaremos y alegraremos en él.','Salmos 118:24']];return v[Math.floor(Date.now()/86400000)%v.length];}
 
-  useEffect(() => {
-    localStorage.setItem('hogar_ahorro_expenses', JSON.stringify(expenses));
-  }, [expenses]);
-
-  const addExpense = (newExpense: Omit<Expense, 'id'>) => {
-    const expense: Expense = {
-      ...newExpense,
-      id: crypto.randomUUID(),
-    };
-    setExpenses(prev => [expense, ...prev]);
-  };
-
-  const deleteExpense = (id: string) => {
-    setExpenses(prev => prev.filter(e => e.id !== id));
-  };
-
-  return (
-    <div className="min-h-screen bg-[#FDFCF0] text-black font-sans selection:bg-yellow-300">
-      {/* Header */}
-      <header className="border-b-8 border-black bg-yellow-400 p-6 sticky top-0 z-50">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="bg-black p-3 rounded-2xl text-white shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
-              <Wallet size={32} />
-            </div>
-            <h1 className="text-4xl font-black uppercase tracking-tighter italic">HogarAhorro</h1>
-          </div>
-          <div className="hidden sm:block">
-            <p className="text-xs font-black uppercase bg-black text-white px-3 py-1 rounded-full">
-              Control de Gastos v1.0
-            </p>
-          </div>
-        </div>
-      </header>
-
-      <main className="max-w-4xl mx-auto p-6 pb-24">
-        {/* Hero Section */}
-        <section className="mb-12">
-          <div className="bg-white p-8 rounded-[40px] border-8 border-black shadow-[16px_16px_0px_0px_rgba(0,0,0,1)] relative overflow-hidden">
-            <div className="absolute -top-10 -right-10 w-40 h-40 bg-pink-400 rounded-full opacity-20 blur-3xl"></div>
-            <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-blue-400 rounded-full opacity-20 blur-3xl"></div>
-            
-            <div className="relative z-10">
-              <h2 className="text-5xl font-black uppercase tracking-tighter leading-none mb-4">
-                Domina tus <span className="text-pink-500">Finanzas</span>
-              </h2>
-              <p className="text-xl font-bold text-zinc-600 max-w-xl">
-                Registra cada gasto, visualiza tu progreso y deja que la IA te ayude a encontrar esos puntos críticos donde podrías estar ahorrando una fortuna.
-              </p>
-            </div>
-          </div>
-        </section>
-
-        {/* Stats & Form Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-12">
-          <div className="lg:col-span-7">
-            <Stats expenses={expenses} />
-            <AIInsights expenses={expenses} />
-          </div>
-          
-          <div className="lg:col-span-5">
-            <div className="sticky top-32">
-              <ExpenseForm onAdd={addExpense} />
-              <ExpenseList expenses={expenses} onDelete={deleteExpense} />
-            </div>
-          </div>
-        </div>
-
-        {/* Footer Info */}
-        <footer className="mt-24 pt-12 border-t-4 border-black text-center">
-          <p className="font-black uppercase tracking-widest text-sm mb-2">HogarAhorro © 2026</p>
-          <p className="text-zinc-400 font-bold text-xs italic">Hecho con ❤️ para tu bolsillo</p>
-        </footer>
-      </main>
-    </div>
-  );
-}
+export default function App(){
+const [now,setNow]=useState(new Date()),[tab,setTab]=useState('inicio'),[admin,setAdmin]=useState(false),[menu,setMenu]=useState(false);
+const [churches,setChurches]=useState<ChurchItem[]>(()=>JSON.parse(localStorage.getItem('arica_churches')||JSON.stringify(seedChurches)));
+const [businesses,setBusinesses]=useState<Business[]>(()=>JSON.parse(localStorage.getItem('arica_businesses')||JSON.stringify(seedBusinesses)));
+const [news,setNews]=useState<News[]>(()=>JSON.parse(localStorage.getItem('arica_news')||JSON.stringify(seedNews)));
+const [question,setQuestion]=useState(''),[answer,setAnswer]=useState(''),[loadingAI,setLoadingAI]=useState(false);
+const [modal,setModal]=useState<'church'|'news'|'business'|null>(null);
+useEffect(()=>{const id=setInterval(()=>setNow(new Date()),1000);return()=>clearInterval(id)},[]);
+useEffect(()=>localStorage.setItem('arica_churches',JSON.stringify(churches)),[churches]);useEffect(()=>localStorage.setItem('arica_businesses',JSON.stringify(businesses)),[businesses]);useEffect(()=>localStorage.setItem('arica_news',JSON.stringify(news)),[news]);
+const devotional=useMemo(dailyDevotional,[]),verse=useMemo(dailyVerse,[]);
+const dateText=now.toLocaleDateString('es-CL',{weekday:'long',day:'numeric',month:'long',year:'numeric'}),timeText=now.toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+const askBible=async()=>{if(!question.trim())return;setLoadingAI(true);setAnswer('');await new Promise(r=>setTimeout(r,650));const q=question.toLowerCase();let r='La Biblia presenta este tema desde distintas perspectivas. Para estudiarlo bien, observa el contexto del pasaje, quién habla, a quién se dirige y cómo se relaciona con el resto de las Escrituras. Comienza comparando pasajes relacionados.';if(q.includes('fe'))r='La fe bíblica implica confiar en Dios y actuar conforme a esa confianza. Hebreos 11 explica que la fe mira más allá de lo visible y Santiago 2 recuerda que una fe genuina se refleja en nuestras obras. Estudia Hebreos 11, Romanos 10:17 y Santiago 2:14-26.';if(q.includes('oración')||q.includes('orar'))r='Jesús enseñó a sus discípulos a orar con una relación sincera con el Padre (Mateo 6:5-13). La oración incluye adoración, gratitud, confesión, petición e intercesión. Estudia Mateo 6, Filipenses 4:6-7 y 1 Tesalonicenses 5:17.';if(q.includes('amor'))r='El amor ocupa un lugar central en la enseñanza cristiana. Jesús lo resume en amar a Dios y al prójimo, y 1 Corintios 13 describe cómo se expresa en la práctica. Estudia Mateo 22:37-40, Juan 13:34-35 y 1 Corintios 13.';setAnswer(r);setLoadingAI(false)};
+const nav=[['inicio','Inicio',Cross],['devocional','Devocional',BookOpen],['estudio','Estudio bíblico IA',MessageCircle],['iglesias','Iglesias',Church],['noticias','Noticias de Arica',Newspaper]] as const;
+const go=(x:string)=>{setTab(x);setMenu(false)};
+return <div className="site-shell">
+<header className="topbar"><div className="brand"><div className="brand-mark"><Cross size={25}/></div><div><div className="brand-name">Luz de Arica</div><div className="brand-sub">Comunidad cristiana evangélica</div></div></div><nav className={menu?'nav open':'nav'}>{nav.map(([id,label,Icon])=><button key={id} className={tab===id?'nav-link active':'nav-link'} onClick={()=>go(id)}><Icon size={17}/>{label}</button>)}<button className="admin-btn" onClick={()=>setAdmin(!admin)}><ShieldCheck size={17}/>{admin?'Salir admin':'Administrador'}</button></nav><button className="mobile-menu" onClick={()=>setMenu(!menu)}>{menu?<X/>:<Menu/>}</button></header>
+<main>
+<section className="hero"><div className="hero-copy"><span className="eyebrow"><Sparkles size={14}/> FE · ESPERANZA · COMUNIDAD</span><h1>Una comunidad que <em>busca a Dios</em> cada día.</h1><p>Devocionales, estudio bíblico, iglesias, noticias y recursos cristianos para la comunidad evangélica de Arica.</p><div className="hero-actions"><button className="primary" onClick={()=>go('devocional')}>Ver devocional de hoy <ChevronRight size={18}/></button><button className="secondary" onClick={()=>go('iglesias')}><MapPin size={18}/> Iglesias en Arica</button></div></div><div className="clock-card"><div className="clock-icon"><Clock3 size={22}/></div><div className="clock-label">Arica · Chile</div><div className="clock-time">{timeText}</div><div className="clock-date">{dateText}</div><div className="clock-line"/></div></section>
+<section className="verse-strip"><div className="verse-icon"><Heart size={20}/></div><div><span>VERSÍCULO DEL DÍA · {verse[1]}</span><strong>“{verse[0]}”</strong></div></section>
+{admin&&<AdminPanel onChurch={()=>setModal('church')} onNews={()=>setModal('news')} onBusiness={()=>setModal('business')}/>} 
+{tab==='inicio'&&<><section className="section-head"><div><span className="eyebrow">PARA HOY</span><h2>Alimenta tu fe</h2></div><button className="text-btn" onClick={()=>go('devocional')}>Ver todo <ChevronRight size={16}/></button></section><div className="feature-grid"><article className="devotional-card"><div className="card-top"><span className="pill">DEVOCIONAL DIARIO</span><BookOpen size={22}/></div><h3>{devotional.title}</h3><p className="scripture">{devotional.verse}</p><p>{devotional.text}</p><div className="reflection"><b>Para meditar hoy</b><span>{devotional.action}</span></div></article><article className="study-card"><div className="card-top"><span className="pill light">ESTUDIO BÍBLICO</span><Sparkles size={22}/></div><h3>Pregúntale a la Biblia</h3><p>Explora preguntas sobre personajes, doctrina, contexto y pasajes bíblicos con un asistente pensado para el estudio cristiano.</p><button className="primary small" onClick={()=>go('estudio')}>Hacer una pregunta <Send size={16}/></button></article></div></>}
+{tab==='devocional'&&<section className="content-section"><span className="eyebrow">DEVOCIONAL DIARIO</span><h2>{devotional.title}</h2><div className="reading-card"><div className="verse-big">{devotional.verse}</div><p>{devotional.text}</p><h4>Reflexión práctica</h4><p>{devotional.action}</p><div className="generated"><Sparkles size={16}/> Contenido generado automáticamente cada día</div></div><section className="image-card"><div><span className="eyebrow">IMAGEN DEL DÍA</span><h3>Mensaje para compartir</h3><p>“{verse[0]}”</p><small>{verse[1]}</small></div><div className="verse-art"><Cross size={40}/><strong>{verse[0]}</strong><span>{verse[1]}</span></div></section></section>}
+{tab==='estudio'&&<section className="content-section"><span className="eyebrow">ASISTENTE DE ESTUDIO</span><h2>Preguntas bíblicas con IA</h2><p className="lead">Haz una pregunta y recibe una orientación para comenzar tu estudio. Revisa siempre el contexto de los textos bíblicos.</p><div className="qa-box"><textarea value={question} onChange={e=>setQuestion(e.target.value)} placeholder="Ej.: ¿Qué enseña la Biblia sobre la fe?"/><button className="primary" onClick={askBible} disabled={loadingAI}>{loadingAI?'Analizando…':'Preguntar a la IA'} <Send size={17}/></button></div>{answer&&<div className="answer-card"><div className="answer-title"><Sparkles size={18}/> Orientación para tu estudio</div><p>{answer}</p><div className="notice">La respuesta es una ayuda de estudio; comprueba siempre los pasajes y su contexto.</div></div>}<div className="suggestions"><b>Ideas para comenzar</b><div>{['¿Qué es la fe según la Biblia?','¿Cómo enseñó Jesús a orar?','¿Qué dice la Biblia sobre el amor?'].map(x=><button key={x} onClick={()=>setQuestion(x)}>{x}</button>)}</div></div></section>}
+{tab==='iglesias'&&<section className="content-section"><div className="section-head"><div><span className="eyebrow">COMUNIDAD LOCAL</span><h2>Iglesias evangélicas de Arica</h2></div><span className="count">{churches.length} registradas</span></div><div className="map-layout"><div className="map-wrap"><iframe title="Iglesias evangélicas de Arica en Google Maps" src="https://www.google.com/maps?q=iglesias+evangelicas+Arica+Chile&output=embed" loading="lazy"/><div className="map-overlay"><MapPin size={17}/> Google Maps · Arica</div></div><div className="church-list">{churches.map(c=><div className="church-row" key={c.id}><div className="church-icon"><Church size={19}/></div><div><b>{c.name}</b><span>{c.denomination}</span><small><MapPin size={13}/> {c.address}</small></div>{admin&&<button className="icon-btn danger" onClick={()=>setChurches(churches.filter(x=>x.id!==c.id))}><Trash2 size={15}/></button>}<a className="icon-btn" href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(c.name+' '+c.address)}`} target="_blank" rel="noreferrer"><ExternalLink size={15}/></a></div>)}{!churches.length&&<div className="empty">Aún no hay iglesias registradas.</div>}</div></div></section>}
+{tab==='noticias'&&<section className="content-section"><div className="section-head"><div><span className="eyebrow">ACTUALIDAD</span><h2>Noticias de Arica</h2><p className="lead">Espacio para publicar y actualizar diariamente noticias locales.</p></div></div><div className="news-grid">{news.map(n=><article className="news-card" key={n.id}><div className="news-date"><CalendarDays size={15}/> {n.date}</div><h3>{n.title}</h3><p>{n.summary}</p>{n.source&&<small>Fuente: {n.source}</small>}{admin&&<button className="delete-link" onClick={()=>setNews(news.filter(x=>x.id!==n.id))}><Trash2 size={14}/> Eliminar</button>}</article>)}</div></section>}
+</main>
+<section className="business-ticker"><div className="ticker-label"><Store size={17}/> NEGOCIOS CRISTIANOS</div><div className="ticker-track">{businesses.map(b=><a key={b.id} href={b.url||'#'} target="_blank" rel="noreferrer"><b>{b.name}</b><span>{b.category} · {b.address}</span></a>)}</div>{admin&&<button className="ticker-add" onClick={()=>setModal('business')}><Plus size={16}/> Añadir</button>}</section>
+<footer><div className="footer-brand"><div className="brand-mark"><Cross size={21}/></div><div><b>Luz de Arica</b><span>Fe que conecta a nuestra ciudad.</span></div></div><div>© 2026 · Comunidad cristiana evangélica de Arica</div></footer>
+{modal==='church'&&<Modal title="Añadir iglesia" onClose={()=>setModal(null)}><FormChurch onSave={c=>{setChurches([...churches,{...c,id:crypto.randomUUID()}]);setModal(null)}}/></Modal>}
+{modal==='news'&&<Modal title="Publicar noticia" onClose={()=>setModal(null)}><FormNews onSave={n=>{setNews([{...n,id:crypto.randomUUID(),date:new Date().toLocaleDateString('es-CL')},...news]);setModal(null)}}/></Modal>}
+{modal==='business'&&<Modal title="Añadir negocio cristiano" onClose={()=>setModal(null)}><FormBusiness onSave={b=>{setBusinesses([...businesses,{...b,id:crypto.randomUUID()}]);setModal(null)}}/></Modal>}
+</div>}
+function AdminPanel({onChurch,onNews,onBusiness}:{onChurch:()=>void;onNews:()=>void;onBusiness:()=>void}){return <div className="admin-panel"><div><ShieldCheck size={20}/><div><b>Modo administrador activo</b><span>Los cambios de iglesias, negocios y noticias se guardan en este navegador.</span></div></div><div className="admin-actions"><button onClick={onChurch}><Plus size={15}/> Iglesia</button><button onClick={onNews}><Plus size={15}/> Noticia</button><button onClick={onBusiness}><Plus size={15}/> Negocio</button></div></div>}
+function Modal({title,onClose,children}:{title:string;onClose:()=>void;children:ReactNode}){return <div className="modal-backdrop"><div className="modal"><div className="modal-head"><h3>{title}</h3><button onClick={onClose}><X/></button></div>{children}</div></div>}
+function FormChurch({onSave}:{onSave:(c:Omit<ChurchItem,'id'>)=>void}){const[v,setV]=useState({name:'',address:'',denomination:'Evangélica'});return <form onSubmit={e=>{e.preventDefault();onSave(v)}}><input required placeholder="Nombre de la iglesia" value={v.name} onChange={e=>setV({...v,name:e.target.value})}/><input required placeholder="Dirección" value={v.address} onChange={e=>setV({...v,address:e.target.value})}/><input placeholder="Denominación" value={v.denomination} onChange={e=>setV({...v,denomination:e.target.value})}/><button className="primary" type="submit">Guardar iglesia</button></form>}
+function FormNews({onSave}:{onSave:(n:Omit<News,'id'|'date'>)=>void}){const[v,setV]=useState({title:'',summary:'',source:''});return <form onSubmit={e=>{e.preventDefault();onSave(v)}}><input required placeholder="Título" value={v.title} onChange={e=>setV({...v,title:e.target.value})}/><textarea required placeholder="Resumen de la noticia" value={v.summary} onChange={e=>setV({...v,summary:e.target.value})}/><input placeholder="Fuente (opcional)" value={v.source} onChange={e=>setV({...v,source:e.target.value})}/><button className="primary" type="submit">Publicar noticia</button></form>}
+function FormBusiness({onSave}:{onSave:(b:Omit<Business,'id'>)=>void}){const[v,setV]=useState({name:'',category:'',address:'Arica',url:''});return <form onSubmit={e=>{e.preventDefault();onSave(v)}}><input required placeholder="Nombre" value={v.name} onChange={e=>setV({...v,name:e.target.value})}/><input required placeholder="Categoría" value={v.category} onChange={e=>setV({...v,category:e.target.value})}/><input required placeholder="Dirección" value={v.address} onChange={e=>setV({...v,address:e.target.value})}/><input placeholder="Enlace (opcional)" value={v.url} onChange={e=>setV({...v,url:e.target.value})}/><button className="primary" type="submit">Añadir negocio</button></form>}
