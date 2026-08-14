@@ -1,20 +1,35 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Luz de Arica ✝️
 
-# Run and deploy your AI Studio app
+Portal cristiano evangélico enfocado en la comunidad de Arica.
 
-This contains everything you need to run your app locally.
+## Incluye
 
-View your app in AI Studio: https://ai.studio/apps/96e96f0e-fe5f-4d4f-97f9-d3511d61bd6a
+- Fecha y hora actual de Arica.
+- Devocional diario rotativo.
+- Versículo e imagen/mensaje del día.
+- Espacio de preguntas bíblicas preparado para integración con IA.
+- Google Maps centrado en iglesias evangélicas de Arica.
+- Panel de administración para agregar iglesias, negocios y noticias.
+- Huincha inferior de negocios y emprendimientos cristianos.
+- Sección de noticias locales.
+- Diseño responsive para computador y móvil.
 
-## Run Locally
+## Importante
 
-**Prerequisites:**  Node.js
+Esta primera versión es un prototipo funcional de frontend. Los registros de administrador se guardan en `localStorage`, por lo que todavía no existe una base de datos ni autenticación real. Para una versión pública de producción se recomienda conectar Supabase/Firebase (o un backend propio), proteger el panel de administración con autenticación y conectar una API de IA con una clave almacenada exclusivamente en servidor.
 
+La generación verdaderamente automática de contenido diario y la actualización automática de noticias requieren un servicio backend/cron y sus respectivas APIs. La interfaz ya está preparada para esas integraciones.
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+## Desarrollo
+
+```bash
+npm install
+npm run dev
+```
+
+## Producción
+
+```bash
+npm run build
+npm run preview
+```
