@@ -14,3 +14,10 @@ jobs:
         run: |
           test -n "$DAILY_CONTENT_URL" || (echo 'Falta DAILY_CONTENT_URL' && exit 1)
           curl -fsS -X POST "$DAILY_CONTENT_URL" -H "Authorization: Bearer $DAILY_CONTENT_TOKEN" -H "Content-Type: application/json" -d '{}'
+      - name: Generar imagen cristiana
+        env:
+          IMAGE_URL: ${{ secrets.IMAGE_GENERATION_URL }}
+          IMAGE_TOKEN: ${{ secrets.DAILY_CONTENT_TOKEN }}
+        run: |
+          test -n "$IMAGE_URL" || (echo 'Falta IMAGE_GENERATION_URL' && exit 1)
+          curl -fsS -X POST "$IMAGE_URL" -H "Authorization: Bearer $IMAGE_TOKEN" -H "Content-Type: application/json" -d '{}'
